@@ -1,12 +1,14 @@
 package br.com.fiap.qmove.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 @Entity
 @Data
-public class Setores {
+public class Setor {
+    @Id
     private long id;
     private String nome;
-    private String descricao;
+    private String etiqueta;
 }

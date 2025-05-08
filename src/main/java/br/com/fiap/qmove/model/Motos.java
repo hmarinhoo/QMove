@@ -14,7 +14,7 @@ public class Motos {
     private Long id;
     private String placa;
     private String modelo;
-    private Setores setores;
+    private Setor setores;
     private String qrCode; //para guardar o texto do QRCode
     private LocalDateTime dataCadastro;
 }

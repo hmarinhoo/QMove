@@ -7,7 +7,6 @@ import lombok.Data;
 @Entity
 @Data
 public class Setor {
-    @Id
     private long id;
     private String nome;
     private String etiqueta;

@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
@@ -24,8 +25,10 @@ public class Moto {
     @JoinColumn(name = "qrcode_id") // Criando a chave estrangeira
     private Qrcode qrcode;
 
-    @ManyToMany(mappedBy = "motos")
-    private List<Setor> setores;
+    @ManyToOne
+    @JoinColumn(name = "setor_id_setor")
+    private Setor setor;
+
 
     @OneToMany(mappedBy = "moto")
     private List<Alerta> alertas;

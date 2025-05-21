@@ -8,6 +8,6 @@ public record AlertaResponse(
     String descricao,
     LocalDateTime dataHora,
     boolean lido,
-    SetorResponse setor,
-    MotoResponse moto
+    Long motoId,
+    Long setorId
 ) {}

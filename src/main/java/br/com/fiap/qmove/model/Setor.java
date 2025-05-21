@@ -2,6 +2,8 @@ package br.com.fiap.qmove.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,7 +26,7 @@ public class Setor {
         inverseJoinColumns = @JoinColumn(name = "moto_id")
     )
     @JsonIgnore
-    private List<Moto> motos;
+        private List<Moto> motos = new ArrayList<>();  // <-- INICIALIZA AQUI
 
     @OneToMany(mappedBy = "setor", cascade = CascadeType.ALL)
     private List<Alerta> alertas;

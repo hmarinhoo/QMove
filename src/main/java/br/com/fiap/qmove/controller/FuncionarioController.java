@@ -1,7 +1,7 @@
 package br.com.fiap.qmove.controller;
 
-import br.com.fiap.qmove.model.Funcionarios;
-import br.com.fiap.qmove.repository.FuncionariosRepository;
+import br.com.fiap.qmove.model.Funcionario;
+import br.com.fiap.qmove.repository.FuncionarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,32 +10,32 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/funcionarios")
-public class FuncionariosController {
+@RequestMapping("/funcionario")
+public class FuncionarioController {
 
     @Autowired
-    private FuncionariosRepository repository;
+    private FuncionarioRepository repository;
 
     @GetMapping
-    public List<Funcionarios> listar() {
+    public List<Funcionario> listar() {
         return repository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Funcionarios> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Funcionario> buscarPorId(@PathVariable Long id) {
         return repository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Funcionarios cadastrar(@RequestBody Funcionarios funcionario) {
+    public Funcionario cadastrar(@RequestBody Funcionario funcionario) {
         return repository.save(funcionario);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Funcionarios> atualizar(@PathVariable Long id, @RequestBody Funcionarios funcionario) {
-        Optional<Funcionarios> existente = repository.findById(id);
+    public ResponseEntity<Funcionario> atualizar(@PathVariable Long id, @RequestBody Funcionario funcionario) {
+        Optional<Funcionario> existente = repository.findById(id);
         if (existente.isEmpty()) return ResponseEntity.notFound().build();
 
         funcionario.setId(id);

@@ -1,7 +1,7 @@
 package br.com.fiap.qmove.controller;
 
-import br.com.fiap.qmove.model.Alertas;
-import br.com.fiap.qmove.repository.AlertasRepository;
+import br.com.fiap.qmove.model.Alerta;
+import br.com.fiap.qmove.repository.AlertaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,31 +9,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/alertas")
-public class AlertasController {
+@RequestMapping("/alerta")
+public class AlertaController {
 
     @Autowired
-    private AlertasRepository repository;
+    private AlertaRepository repository;
 
     @GetMapping
-    public List<Alertas> listar() {
+    public List<Alerta> listar() {
         return repository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Alertas> buscarPorId(@PathVariable int id) {
+    public ResponseEntity<Alerta> buscarPorId(@PathVariable int id) {
         return repository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Alertas cadastrar(@RequestBody Alertas alerta) {
+    public Alerta cadastrar(@RequestBody Alerta alerta) {
         return repository.save(alerta);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Alertas> atualizar(@PathVariable int id, @RequestBody Alertas alerta) {
+    public ResponseEntity<Alerta> atualizar(@PathVariable int id, @RequestBody Alerta alerta) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }

@@ -2,9 +2,9 @@ package br.com.fiap.qmove.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import br.com.fiap.qmove.model.Alertas;
+import br.com.fiap.qmove.model.Alerta;
 
-public interface AlertasRepository extends JpaRepository<Alertas, Integer>{
+public interface AlertaRepository extends JpaRepository<Alerta, Integer>{
     
 } 
 

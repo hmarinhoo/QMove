@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -14,5 +15,6 @@ public class Qrcode {
     private String tipo;
 
     @OneToOne(mappedBy = "qrcode")
-    private Motos moto;
+    @JsonIgnore // evita loop de serialização
+    private Moto moto;
 }

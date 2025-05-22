@@ -20,7 +20,7 @@ import lombok.Data;
 public class Alerta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     
     @Enumerated(EnumType.STRING)
     private Tipo tipo;

@@ -27,9 +27,16 @@ public class QrcodeController {
     // Listar com paginação e cache
     @GetMapping
     @Cacheable(value = "qrcodes")
-    public Page<Qrcode> listar(Pageable pageable) {
-        return repository.findAll(pageable);
+    public Page<Qrcode> listar(
+            @RequestParam(required = false) String valor,
+            Pageable pageable
+    ) {
+    Specification<Qrcode> spec = Specification.where(null);
+    if (valor != null && !valor.isEmpty()) {
+        spec = spec.and(QrcodeSpecification.comValor(valor));
     }
+    return repository.findAll(spec, pageable);
+}
 
     // Buscar por ID
     @GetMapping("/{id}")

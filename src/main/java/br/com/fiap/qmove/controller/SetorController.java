@@ -11,8 +11,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -26,10 +28,21 @@ public class SetorController {
     // Listar com paginação + cache
     @GetMapping
     @Cacheable(value = "setores")
-    public Page<SetorResponse> listar(Pageable pageable) {
-        return repository.findAll(pageable)
+    public Page<SetorResponse> listar(
+        @RequestParam(required = false) String nome,
+        @RequestParam(required = false) String codigo,
+        Pageable pageable
+    ) {
+        Specification<Setor> spec = Specification.where(null);
+        if (nome != null && !nome.isEmpty()) {
+            spec = spec.and(SetorSpecification.comNome(nome));
+        }
+        if (codigo != null && !codigo.isEmpty()) {
+            spec = spec.and(SetorSpecification.comCodigo(codigo));
+        }
+        return repository.findAll(spec, pageable)
                 .map(this::toSetorResponse);
-    }
+}
 
     // Buscar por ID
     @GetMapping("/{id}")
@@ -63,13 +76,12 @@ public class SetorController {
     // Deletar setor
     @DeleteMapping("/{id}")
     @CacheEvict(value = "setores", allEntries = true)
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!repository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
+        var setor = repository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Setor não encontrado"));
+        repository.delete(setor);
+        return ResponseEntity.ok("Setor com ID " + id + " foi deletado com sucesso.");
+}
 
     // Filtro apenas por nome
     @GetMapping("/filtro")

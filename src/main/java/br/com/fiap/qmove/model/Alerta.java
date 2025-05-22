@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import br.com.fiap.qmove.model.enums.Tipo;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,7 +23,7 @@ public class Alerta {
     private int id;
     
     @Enumerated(EnumType.STRING)
-    private String tipo;
+    private Tipo tipo;
     private String descricao;
     private LocalDateTime dataHora;
     private boolean lido;

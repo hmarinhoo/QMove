@@ -41,6 +41,7 @@ A solução automatiza o controle de motos no pátio, utilizando uma arquitetura
 ## 🚀 Instruções para Execução
 
 1º Rodar a aplicação :
+
     - No terminal, dentro da pasta do projeto rode: mvn spring-boot:run 
     - Ou execute diretamente pela interface utilizada
 

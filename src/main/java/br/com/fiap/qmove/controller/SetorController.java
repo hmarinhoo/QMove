@@ -3,8 +3,14 @@ package br.com.fiap.qmove.controller;
 import br.com.fiap.qmove.model.Setor;
 import br.com.fiap.qmove.model.dto.SetorResponse;
 import br.com.fiap.qmove.repository.SetorRepository;
+import br.com.fiap.specification.SetorSpecification;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +23,15 @@ public class SetorController {
     @Autowired
     private SetorRepository repository;
 
+    // Listar com paginação + cache
     @GetMapping
-    public List<SetorResponse> listar() {
-        return repository.findAll()
-                .stream()
-                .map(this::toSetorResponse)
-                .toList();
+    @Cacheable(value = "setores")
+    public Page<SetorResponse> listar(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(this::toSetorResponse);
     }
 
+    // Buscar por ID
     @GetMapping("/{id}")
     public ResponseEntity<SetorResponse> buscarPorId(@PathVariable Long id) {
         return repository.findById(id)
@@ -33,13 +40,17 @@ public class SetorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Cadastrar novo setor
     @PostMapping
+    @CacheEvict(value = "setores", allEntries = true)
     public ResponseEntity<SetorResponse> cadastrar(@RequestBody @Valid Setor setor) {
         Setor salvo = repository.save(setor);
         return ResponseEntity.ok(toSetorResponse(salvo));
     }
 
+    // Atualizar setor
     @PutMapping("/{id}")
+    @CacheEvict(value = "setores", allEntries = true)
     public ResponseEntity<SetorResponse> atualizar(@PathVariable Long id, @RequestBody @Valid Setor setor) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -49,7 +60,9 @@ public class SetorController {
         return ResponseEntity.ok(toSetorResponse(atualizado));
     }
 
+    // Deletar setor
     @DeleteMapping("/{id}")
+    @CacheEvict(value = "setores", allEntries = true)
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -58,7 +71,14 @@ public class SetorController {
         return ResponseEntity.noContent().build();
     }
 
-    // Método auxiliar para converter Setor em SetorResponse
+    // Filtro apenas por nome
+    @GetMapping("/filtro")
+    public List<Setor> filtrarPorNome(@RequestParam(required = false) String nome) {
+        Specification<Setor> spec = SetorSpecification.comNome(nome);
+        return repository.findAll(spec);
+    }
+
+    // Conversão de entidade para DTO
     private SetorResponse toSetorResponse(Setor setor) {
         return new SetorResponse(
                 setor.getId(),

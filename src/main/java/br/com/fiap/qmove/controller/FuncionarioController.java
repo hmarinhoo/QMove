@@ -1,53 +1,104 @@
 package br.com.fiap.qmove.controller;
 
-import br.com.fiap.qmove.model.Funcionario;
-import br.com.fiap.qmove.repository.FuncionarioRepository;
+import java.util.List;
 
-import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Optional;
+import br.com.fiap.qmove.model.Funcionario;
+import br.com.fiap.qmove.model.dto.FuncionarioResponse;
+import br.com.fiap.qmove.repository.FuncionarioRepository;
+import br.com.fiap.specification.FuncionarioSpecification;
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/funcionario")
+@RequestMapping("/funcionarios")
 public class FuncionarioController {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    public record FuncionarioFilter(String nome, String email) {}
 
     @Autowired
     private FuncionarioRepository repository;
 
     @GetMapping
-    public List<Funcionario> listar() {
-        return repository.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Funcionario> buscarPorId(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @Cacheable("funcionarios")
+    public List<FuncionarioResponse> index(FuncionarioFilter filters) {
+        log.info("Listando funcionários com filtros: nome={}, email={}", filters.nome(), filters.email());
+        
+        var funcionarios = repository.findAll(FuncionarioSpecification.filtro(filters.nome(), filters.email()));
+        
+        return funcionarios.stream()
+            .map(func -> new FuncionarioResponse(func.getId(), func.getNome(), func.getEmail()))
+            .toList();
     }
 
     @PostMapping
-    public Funcionario cadastrar(@RequestBody @Valid Funcionario funcionario) {
-        return repository.save(funcionario);
+    @ResponseStatus(code = HttpStatus.CREATED)
+    @CacheEvict(value = "funcionarios", allEntries = true)
+    public FuncionarioResponse create(@RequestBody @Valid Funcionario funcionario) {
+        log.info("Cadastrando funcionário " + funcionario.getNome());
+
+        Funcionario funcionarioSaved = repository.save(funcionario);
+
+        return new FuncionarioResponse(
+            funcionarioSaved.getId(),
+            funcionarioSaved.getNome(),
+            funcionarioSaved.getEmail()
+        );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Funcionario> atualizar(@PathVariable Long id, @RequestBody @Valid Funcionario funcionario) {
-        Optional<Funcionario> existente = repository.findById(id);
-        if (existente.isEmpty()) return ResponseEntity.notFound().build();
-
-        funcionario.setId(id);
-        return ResponseEntity.ok(repository.save(funcionario));
+    @GetMapping("{id}")
+    public FuncionarioResponse get(@PathVariable Long id) {
+        log.info("Buscando funcionário " + id);
+        Funcionario funcionario = getFuncionario(id);
+        return new FuncionarioResponse(
+            funcionario.getId(),
+            funcionario.getNome(),
+            funcionario.getEmail()
+        );
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!repository.existsById(id)) return ResponseEntity.notFound().build();
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("{id}")
+    @CacheEvict(value = "funcionarios", allEntries = true)
+    public ResponseEntity<String> destroy(@PathVariable Long id) {
+        log.info("Apagando funcionário " + id);
+        Funcionario funcionario = getFuncionario(id);
+        repository.delete(funcionario);
+        log.info("Funcionário " + id + " apagado com sucesso");
+        return ResponseEntity.ok("Funcionário com ID " + id + " foi deletado com sucesso.");
+    }
+
+    @PutMapping("{id}")
+    @CacheEvict(value = "funcionarios", allEntries = true)
+    public FuncionarioResponse update(@PathVariable Long id, @RequestBody @Valid Funcionario funcionario) {
+        log.info("Atualizando funcionário " + id + " para " + funcionario);
+
+        Funcionario existingFuncionario = getFuncionario(id);
+
+        existingFuncionario.setNome(funcionario.getNome());
+        existingFuncionario.setEmail(funcionario.getEmail());
+        existingFuncionario.setSenha(funcionario.getSenha());
+
+        Funcionario updatedFuncionario = repository.save(existingFuncionario);
+
+        return new FuncionarioResponse(
+            updatedFuncionario.getId(),
+            updatedFuncionario.getNome(),
+            updatedFuncionario.getEmail()
+        );
+    }
+
+    private Funcionario getFuncionario(Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
     }
 }

@@ -12,25 +12,41 @@ import br.com.fiap.qmove.repository.AlertaRepository;
 import br.com.fiap.qmove.repository.MotoRepository;
 import br.com.fiap.qmove.repository.QrcodeRepository;
 import br.com.fiap.qmove.repository.SetorRepository;
+import br.com.fiap.specification.MotoSpecification;
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/moto")
+@RequestMapping("/motos")
 public class MotoController {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    // DTO para filtros
+    public record MotoFilter(String modelo, String placa) {}
 
     @Autowired
     private MotoRepository repository;
 
     @Autowired
-    private QrcodeRepository qrCodeRepository;
+    private QrcodeRepository qrcodeRepository;
 
     @Autowired
     private SetorRepository setorRepository;
@@ -39,79 +55,84 @@ public class MotoController {
     private AlertaRepository alertaRepository;
 
     @GetMapping
-    public List<MotoResponse> listar() {
-        return repository.findAll().stream()
-                .map(this::toDto)
-                .toList();
+    @Cacheable("motos")
+    public Page<MotoResponse> listar(MotoFilter filters, Pageable pageable) {
+        log.info("Listando motos com filtros: modelo={}, placa={}", filters.modelo(), filters.placa());
+
+        var motos = repository.findAll(MotoSpecification.withFilters(filters), pageable);
+
+        return motos.map(this::toDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MotoResponse> buscarPorId(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(this::toDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public MotoResponse buscarPorId(@PathVariable Long id) {
+        log.info("Buscando moto por id: {}", id);
+        Moto moto = getMoto(id);
+        return toDto(moto);
     }
 
     @PostMapping
-    public ResponseEntity<MotoResponse> cadastrar(@RequestBody @Valid MotoResponse dto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @CacheEvict(value = "motos", allEntries = true)
+    public MotoResponse cadastrar(@RequestBody @Valid MotoResponse dto) {
+        log.info("Cadastrando moto modelo: {}", dto.getModelo());
         Moto moto = toEntity(dto);
+
+        // Validar e setar Qrcode
+        if (dto.getQrcode() != null && dto.getQrcode().getId() != null) {
+            var qrcode = qrcodeRepository.findById(dto.getQrcode().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code não encontrado"));
+            moto.setQrcode(qrcode);
+        }
+
+        // Validar e setar Setor
+        if (dto.getSetor() != null && dto.getSetor().getId() != null) {
+            var setor = setorRepository.findById(dto.getSetor().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Setor não encontrado"));
+            moto.setSetor(setor);
+        }
+
         Moto salva = repository.save(moto);
-        return ResponseEntity.ok(toDto(salva));
+        return toDto(salva);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MotoResponse> atualizar(@PathVariable Long id, @RequestBody @Valid MotoResponse dto) {
-        Optional<Moto> motoOptional = repository.findById(id);
-        if (motoOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+    @CacheEvict(value = "motos", allEntries = true)
+    public MotoResponse atualizar(@PathVariable Long id, @RequestBody @Valid MotoResponse dto) {
+        log.info("Atualizando moto id: {}", id);
 
-        Moto moto = motoOptional.get();
-
-        // Guarda o setor antigo para comparação
+        Moto moto = getMoto(id);
         Setor setorAntigo = moto.getSetor();
 
-        // Atualiza campos básicos
         moto.setStatus(dto.getStatus());
         moto.setModelo(dto.getModelo());
         moto.setPlaca(dto.getPlaca());
 
-        // Atualiza Qrcode
-        if (dto.getQrcode() != null) {
-            Optional<Qrcode> qrcodeOptional = qrCodeRepository.findById(dto.getQrcode().getId());
-            if (qrcodeOptional.isPresent()) {
-                moto.setQrcode(qrcodeOptional.get());
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
+        if (dto.getQrcode() != null && dto.getQrcode().getId() != null) {
+            var qrcode = qrcodeRepository.findById(dto.getQrcode().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code não encontrado"));
+            moto.setQrcode(qrcode);
         } else {
             moto.setQrcode(null);
         }
 
-        // Atualiza setor
         Setor novoSetor = null;
-        if (dto.getSetor() != null) {
-            Optional<Setor> setorOptional = setorRepository.findById(dto.getSetor().getId());
-            if (setorOptional.isPresent()) {
-                novoSetor = setorOptional.get();
-                moto.setSetor(novoSetor);
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
+        if (dto.getSetor() != null && dto.getSetor().getId() != null) {
+            novoSetor = setorRepository.findById(dto.getSetor().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Setor não encontrado"));
+            moto.setSetor(novoSetor);
         } else {
             moto.setSetor(null);
         }
 
-        // Salva moto atualizada
         Moto atualizado = repository.save(moto);
 
-        // Cria alerta se setor mudou
-        if ((setorAntigo == null && novoSetor != null) ||
-            (setorAntigo != null && (novoSetor == null || !setorAntigo.getId().equals(novoSetor.getId())))) {
+        // Criar alerta se setor mudou
+        if ((setorAntigo == null && novoSetor != null)
+                || (setorAntigo != null && (novoSetor == null || !setorAntigo.getId().equals(novoSetor.getId())))) {
 
             Alerta alerta = new Alerta();
-            alerta.setTipo(Tipo.MOVIMENTACAO.name());
+            alerta.setTipo(Tipo.MOVIMENTACAO);
             alerta.setMoto(atualizado);
             alerta.setSetor(novoSetor);
             alerta.setLido(false);
@@ -124,16 +145,21 @@ public class MotoController {
             alertaRepository.save(alerta);
         }
 
-        return ResponseEntity.ok(toDto(atualizado));
+        return toDto(atualizado);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!repository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @CacheEvict(value = "motos", allEntries = true)
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
+        log.info("Deletando moto id: {}", id);
+        Moto moto = getMoto(id);
+        repository.delete(moto);
+        return ResponseEntity.ok("Moto com ID " + id + " deletada com sucesso.");
+    }
+
+    private Moto getMoto(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Moto não encontrada"));
     }
 
     private MotoResponse toDto(Moto moto) {
@@ -180,13 +206,13 @@ public class MotoController {
         moto.setModelo(dto.getModelo());
         moto.setPlaca(dto.getPlaca());
 
-        if (dto.getQrcode() != null) {
-            qrCodeRepository.findById(dto.getQrcode().getId()).ifPresent(moto::setQrcode);
+        if (dto.getQrcode() != null && dto.getQrcode().getId() != null) {
+            qrcodeRepository.findById(dto.getQrcode().getId()).ifPresent(moto::setQrcode);
         } else {
             moto.setQrcode(null);
         }
 
-        if (dto.getSetor() != null) {
+        if (dto.getSetor() != null && dto.getSetor().getId() != null) {
             setorRepository.findById(dto.getSetor().getId()).ifPresent(moto::setSetor);
         } else {
             moto.setSetor(null);

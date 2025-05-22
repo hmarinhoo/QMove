@@ -2,6 +2,7 @@ package br.com.fiap.qmove.controller;
 
 import br.com.fiap.qmove.model.Qrcode;
 import br.com.fiap.qmove.repository.QrcodeRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +29,12 @@ public class QrcodeController {
     }
 
     @PostMapping
-    public Qrcode cadastrar(@RequestBody Qrcode qrcode) {
+    public Qrcode cadastrar(@RequestBody @Valid Qrcode qrcode) {
         return repository.save(qrcode);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Qrcode> atualizar(@PathVariable Long id, @RequestBody Qrcode qrcode) {
+    public ResponseEntity<Qrcode> atualizar(@PathVariable Long id, @RequestBody @Valid Qrcode qrcode) {
         if (!repository.existsById(id)) return ResponseEntity.notFound().build();
         qrcode.setId(id);
         return ResponseEntity.ok(repository.save(qrcode));

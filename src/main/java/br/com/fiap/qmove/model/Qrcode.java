@@ -3,6 +3,7 @@ package br.com.fiap.qmove.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -11,10 +12,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Qrcode {
     @Id
     private Long id;
+
+    @NotBlank(message = "O campo 'valor' do QrCode é obrigatório")
     private String valor;
-    private String tipo;
+
+    @NotBlank(message = "O campo 'tipo' do QrCode é obrigatório")
+    private String tipo; //Exemplo: ativo / inativo
 
     @OneToOne(mappedBy = "qrcode")
-    @JsonIgnore // evita loop de serialização
+    @JsonIgnore 
     private Moto moto;
 }

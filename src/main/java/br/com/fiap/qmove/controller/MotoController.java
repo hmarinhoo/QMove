@@ -12,6 +12,7 @@ import br.com.fiap.qmove.repository.AlertaRepository;
 import br.com.fiap.qmove.repository.MotoRepository;
 import br.com.fiap.qmove.repository.QrcodeRepository;
 import br.com.fiap.qmove.repository.SetorRepository;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -53,14 +54,14 @@ public class MotoController {
     }
 
     @PostMapping
-    public ResponseEntity<MotoResponse> cadastrar(@RequestBody MotoResponse dto) {
+    public ResponseEntity<MotoResponse> cadastrar(@RequestBody @Valid MotoResponse dto) {
         Moto moto = toEntity(dto);
         Moto salva = repository.save(moto);
         return ResponseEntity.ok(toDto(salva));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MotoResponse> atualizar(@PathVariable Long id, @RequestBody MotoResponse dto) {
+    public ResponseEntity<MotoResponse> atualizar(@PathVariable Long id, @RequestBody @Valid MotoResponse dto) {
         Optional<Moto> motoOptional = repository.findById(id);
         if (motoOptional.isEmpty()) {
             return ResponseEntity.notFound().build();

@@ -2,6 +2,8 @@ package br.com.fiap.qmove.controller;
 
 import br.com.fiap.qmove.model.Funcionario;
 import br.com.fiap.qmove.repository.FuncionarioRepository;
+
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +31,12 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public Funcionario cadastrar(@RequestBody Funcionario funcionario) {
+    public Funcionario cadastrar(@RequestBody @Valid Funcionario funcionario) {
         return repository.save(funcionario);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Funcionario> atualizar(@PathVariable Long id, @RequestBody Funcionario funcionario) {
+    public ResponseEntity<Funcionario> atualizar(@PathVariable Long id, @RequestBody @Valid Funcionario funcionario) {
         Optional<Funcionario> existente = repository.findById(id);
         if (existente.isEmpty()) return ResponseEntity.notFound().build();
 
@@ -49,5 +51,3 @@ public class FuncionarioController {
         return ResponseEntity.noContent().build();
     }
 }
-
-

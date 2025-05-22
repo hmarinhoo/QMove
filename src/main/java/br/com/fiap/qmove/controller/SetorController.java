@@ -1,11 +1,9 @@
 package br.com.fiap.qmove.controller;
 
 import br.com.fiap.qmove.model.Setor;
-import br.com.fiap.qmove.model.dto.MotoResponse;
-import br.com.fiap.qmove.model.dto.QrcodeResponse;
 import br.com.fiap.qmove.model.dto.SetorResponse;
 import br.com.fiap.qmove.repository.SetorRepository;
-
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,13 +34,13 @@ public class SetorController {
     }
 
     @PostMapping
-    public ResponseEntity<SetorResponse> cadastrar(@RequestBody Setor setor) {
+    public ResponseEntity<SetorResponse> cadastrar(@RequestBody @Valid Setor setor) {
         Setor salvo = repository.save(setor);
         return ResponseEntity.ok(toSetorResponse(salvo));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SetorResponse> atualizar(@PathVariable Long id, @RequestBody Setor setor) {
+    public ResponseEntity<SetorResponse> atualizar(@PathVariable Long id, @RequestBody @Valid Setor setor) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -60,44 +58,8 @@ public class SetorController {
         return ResponseEntity.noContent().build();
     }
 
-    // Método auxiliar para converter Moto em MotoResponse com SetorResponse (usa setorAtual)
-    private MotoResponse toMotoResponse(br.com.fiap.qmove.model.Moto moto) {
-        QrcodeResponse qrcodeDto = null;
-        if (moto.getQrcode() != null) {
-            qrcodeDto = new QrcodeResponse(
-                moto.getQrcode().getId(),
-                moto.getQrcode().getValor(),
-                moto.getQrcode().getTipo()
-            );
-        }
-
-        var setor = moto.getSetor();
-        SetorResponse setorDto = null;
-        if (setor != null) {
-            setorDto = new SetorResponse(
-                setor.getId(),
-                setor.getNome(),
-                setor.getCodigo()
-            );
-        }
-
-        return new MotoResponse(
-            moto.getId(),
-            moto.getStatus(),
-            moto.getModelo(),
-            moto.getPlaca(),
-            qrcodeDto,
-            setorDto
-        );
-    }
-
-    // Método auxiliar para converter Setor em SetorResponse, incluindo lista de motos
+    // Método auxiliar para converter Setor em SetorResponse
     private SetorResponse toSetorResponse(Setor setor) {
-        List<MotoResponse> motosDto = setor.getMotos()
-                .stream()
-                .map(this::toMotoResponse)
-                .toList();
-
         return new SetorResponse(
                 setor.getId(),
                 setor.getNome(),

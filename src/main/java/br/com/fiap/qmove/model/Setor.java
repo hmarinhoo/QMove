@@ -1,6 +1,8 @@
 package br.com.fiap.qmove.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -16,7 +18,10 @@ public class Setor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O campo 'nome' é obrigatório")
     private String nome;
+    
+    @NotNull(message = "O campo 'codigo é obrigatório")
     private String codigo;
 
     @ManyToMany

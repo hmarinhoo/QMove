@@ -55,11 +55,12 @@ A solução automatiza o controle de motos no pátio, utilizando uma arquitetura
 
 - POST: http://localhost:8080/setor
 - Content-Type: application/json
-
+```json
     {
     "nome": "Manutenção",
     "codigo": "Cor Laranja"
     }
+```
 
 **Criação de QRCode (POST):**
 

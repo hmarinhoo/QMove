@@ -17,9 +17,7 @@ A solução automatiza o controle de motos no pátio, utilizando uma arquitetura
 🔗 API Backend (Spring Boot) - Gerencia o cadastro e movimentação de motos e setores, implementando:
 
 - Cadastro de motos com um QR Code único para cada uma.
-
-- Listagens com filtros, paginação e cache.
-
+  
 - Registro de movimentações e localização das motos.
 
 📱 Aplicativo Móvel - Ferramenta usada pelos funcionários para:
@@ -29,24 +27,27 @@ A solução automatiza o controle de motos no pátio, utilizando uma arquitetura
 - Consultar informações da moto, como localização atual (setor).
 
 - Atualizar o setor da moto em caso de movimentação no pátio.
+  
 📸 QR Codes únicos por moto
 
-- Gerados automaticamente ao cadastrar a moto.
+- Gerados ao cadastrar a moto.
 
 - Fixados fisicamente nas motos para escaneamento rápido.
 
 - Facilitam o rastreamento, movimentação e atualização no sistema
+  
 🔌 Na integração com IoT, a leitura dos QR Codes representa essa  camada do projeto, conectando dispositivos físicos (smartphones e etiquetas) com o ambiente digital da aplicação.
+
 ## 🚀 Instruções para Execução
 
-1º Rodar a aplicação 
-
+1º Rodar a aplicação :
     - No terminal, dentro da pasta do projeto rode: mvn spring-boot:run 
     - Ou execute diretamente pela interface utilizada
 
-2º Acesse a API pelo postman, insomnia, entre outros
+2º Acesse a API pelo postman, insomnia, entre outros.
 
 3º Utilize a URL: http://localhost:8080/
+
 ## 📬 Exemplos de Requisições para a API
 
 **Criação de Setor (POST):**

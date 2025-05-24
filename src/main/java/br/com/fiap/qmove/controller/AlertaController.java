@@ -3,7 +3,7 @@ package br.com.fiap.qmove.controller;
 import br.com.fiap.qmove.model.Alerta;
 import br.com.fiap.qmove.model.dto.AlertaResponse;
 import br.com.fiap.qmove.repository.AlertaRepository;
-import br.com.fiap.specification.AlertaSpecification;
+import br.com.fiap.qmove.specification.AlertaSpecification;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

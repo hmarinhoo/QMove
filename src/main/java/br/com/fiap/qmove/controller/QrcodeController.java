@@ -2,7 +2,7 @@ package br.com.fiap.qmove.controller;
 
 import br.com.fiap.qmove.model.Qrcode;
 import br.com.fiap.qmove.repository.QrcodeRepository;
-import br.com.fiap.specification.QrcodeSpecification;
+import br.com.fiap.qmove.specification.QrcodeSpecification;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

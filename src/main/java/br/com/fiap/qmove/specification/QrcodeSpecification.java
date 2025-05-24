@@ -1,5 +1,4 @@
-package br.com.fiap.specification;
-
+package br.com.fiap.qmove.specification;
 
 import br.com.fiap.qmove.model.Qrcode;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,4 +10,3 @@ public class QrcodeSpecification {
             valor == null ? null : builder.like(builder.lower(root.get("valor")), "%" + valor.toLowerCase() + "%");
     }
 }
-

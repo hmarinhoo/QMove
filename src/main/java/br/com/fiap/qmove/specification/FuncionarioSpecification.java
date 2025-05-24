@@ -1,5 +1,4 @@
-package br.com.fiap.specification;
-
+package br.com.fiap.qmove.specification;
 
 import br.com.fiap.qmove.model.Funcionario;
 import jakarta.persistence.criteria.Predicate;
@@ -22,4 +21,5 @@ public class FuncionarioSpecification {
         };
     }
 }
+
 

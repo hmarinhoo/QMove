@@ -1,4 +1,4 @@
-package br.com.fiap.specification;
+package br.com.fiap.qmove.specification;
 
 import br.com.fiap.qmove.model.Setor;
 import org.springframework.data.jpa.domain.Specification;

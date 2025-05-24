@@ -12,7 +12,7 @@ import br.com.fiap.qmove.repository.AlertaRepository;
 import br.com.fiap.qmove.repository.MotoRepository;
 import br.com.fiap.qmove.repository.QrcodeRepository;
 import br.com.fiap.qmove.repository.SetorRepository;
-import br.com.fiap.specification.MotoSpecification;
+import br.com.fiap.qmove.specification.MotoSpecification;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;

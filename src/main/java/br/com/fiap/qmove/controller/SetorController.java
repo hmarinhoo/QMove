@@ -3,7 +3,7 @@ package br.com.fiap.qmove.controller;
 import br.com.fiap.qmove.model.Setor;
 import br.com.fiap.qmove.model.dto.SetorResponse;
 import br.com.fiap.qmove.repository.SetorRepository;
-import br.com.fiap.specification.SetorSpecification;
+import br.com.fiap.qmove.specification.SetorSpecification;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;

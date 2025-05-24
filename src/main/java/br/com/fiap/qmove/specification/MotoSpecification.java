@@ -1,4 +1,4 @@
-package br.com.fiap.specification;
+package br.com.fiap.qmove.specification;
 
 import br.com.fiap.qmove.controller.MotoController.MotoFilter;
 import br.com.fiap.qmove.model.Moto;

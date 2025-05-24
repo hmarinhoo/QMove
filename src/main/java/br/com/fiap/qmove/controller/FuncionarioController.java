@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import br.com.fiap.qmove.model.Funcionario;
 import br.com.fiap.qmove.model.dto.FuncionarioResponse;
 import br.com.fiap.qmove.repository.FuncionarioRepository;
-import br.com.fiap.specification.FuncionarioSpecification;
+import br.com.fiap.qmove.specification.FuncionarioSpecification;
 import jakarta.validation.Valid;
 
 @RestController
